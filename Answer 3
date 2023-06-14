@@ -1,1 +1,48 @@
+#include <iostream>
+#include <fstream>
+#include <regex>
+#include <vector>
 
+std::vector<std::string> parse_top_output(const std::string& input_file) {
+    std::vector<std::string> pids;
+    std::vector<std::string> users;
+    
+    std::ifstream file(input_file);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open input file." << std::endl;
+        return {};
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        // Extract PIDs using regex
+        std::regex pid_regex(R"(\b(\d+)\b)");
+        std::smatch pid_match;
+        if (std::regex_search(line, pid_match, pid_regex)) {
+            pids.push_back(pid_match.str(1));
+        }
+
+        // Extract users using regex
+        std::regex user_regex(R"(\b(\w+)\s+PID\b)");
+        std::smatch user_match;
+        if (std::regex_search(line, user_match, user_regex)) {
+            users.push_back(user_match.str(1));
+        }
+    }
+
+    file.close();
+
+    return pids;
+}
+
+int main() {
+    std::string input_file = "top_output.txt";
+    std::vector<std::string> pids = parse_top_output(input_file);
+
+    // Print the extracted PIDs
+    for (const auto& pid : pids) {
+        std::cout << "PID: " << pid << std::endl;
+    }
+
+    return 0;
+}
